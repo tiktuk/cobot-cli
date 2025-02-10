@@ -15,6 +15,6 @@ settings = Dynaconf(
             "api_base", must_exist=True, is_type_of=str, default="https://api.cobot.me"
         ),
         Validator("access_token", must_exist=True, is_type_of=str),
-        Validator("default_resource_id", must_exist=False, is_type_of=str),
+        Validator("default_resource_id", must_exist=False, is_type_of=str, default=None),
     ],
 )

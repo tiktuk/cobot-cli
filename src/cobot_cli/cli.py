@@ -95,12 +95,11 @@ def get_bookings(
         to_date = now + timedelta(days=days)
 
         with console.status("Fetching bookings..."):
-            used_resource_id = (
-                resource_id or str(settings.default_resource_id)
-                if settings.default_resource_id
-                else None
-            )
-            bookings = fetch_bookings(token, from_date, to_date, used_resource_id)
+            used_resource_id = resource_id or settings.default_resource_id
+            if not used_resource_id:
+                console.print("No resource ID specified and no default resource configured in settings", style="yellow")
+                return
+            bookings = fetch_bookings(token, from_date, to_date, str(used_resource_id))
 
         if not bookings:
             console.print(
@@ -225,12 +224,11 @@ def show_weekly_schedule(
         to_date = from_date + timedelta(days=days)
 
         with console.status("Fetching schedule..."):
-            used_resource_id = (
-                resource_id or str(settings.default_resource_id)
-                if settings.default_resource_id
-                else None
-            )
-            bookings = fetch_bookings(token, from_date, to_date, used_resource_id)
+            used_resource_id = resource_id or settings.default_resource_id
+            if not used_resource_id:
+                console.print("No resource ID specified and no default resource configured in settings", style="yellow")
+                return
+            bookings = fetch_bookings(token, from_date, to_date, str(used_resource_id))
 
         if not bookings:
             console.print(
