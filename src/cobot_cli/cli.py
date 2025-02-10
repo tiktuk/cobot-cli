@@ -130,8 +130,8 @@ def create_weekly_table(bookings: list, from_date: datetime, days: int) -> Table
     daily_bookings = {i: [] for i in range(days)}
     for booking in bookings:
         attrs = booking["attributes"]
-        from_time = parser.parse(attrs["from"])
-        days_diff = (from_time.date() - from_date.date()).days
+        from_time = parser.parse(attrs["from"]).astimezone()  # Convert to local timezone
+        days_diff = (from_time.date() - from_date.astimezone().date()).days
         if 0 <= days_diff < days:
             daily_bookings[days_diff].append(booking)
 
@@ -141,8 +141,8 @@ def create_weekly_table(bookings: list, from_date: datetime, days: int) -> Table
     for day_bookings in daily_bookings.values():
         for booking in day_bookings:
             attrs = booking["attributes"]
-            from_time = parser.parse(attrs["from"])
-            to_time = parser.parse(attrs["to"])
+            from_time = parser.parse(attrs["from"]).astimezone()  # Convert to local timezone
+            to_time = parser.parse(attrs["to"]).astimezone()  # Convert to local timezone
             start_hours.append(from_time.hour)
             # If end time is exactly on the hour, we don't need an extra slot
             end_hour = to_time.hour if to_time.minute > 0 else to_time.hour - 1
