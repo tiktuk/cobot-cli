@@ -132,9 +132,10 @@ def create_weekly_table(bookings: list, from_date: datetime, days: int) -> Table
             title = attrs["title"] or "N/A"
             
             # Create a row entry
+            details = name if title == "N/A" else f"{name}: {title}"
             row_data = {
                 "time": time_str,
-                "details": f"{name}\n{title}",
+                "details": details,
                 "day_idx": day_idx
             }
             rows.append(row_data)
