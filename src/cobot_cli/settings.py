@@ -16,5 +16,14 @@ settings = Dynaconf(
         ),
         Validator("access_token", must_exist=True, is_type_of=str),
         Validator("default_resource_id", is_type_of=str),
+        Validator(
+            "data_dir",
+            default="~/.local/share/cobot",
+            is_type_of=str,
+        ),
     ],
 )
+
+# Ensure data_dir is expanded and exists
+settings.data_dir = os.path.expanduser(str(settings.data_dir))
+os.makedirs(settings.data_dir, exist_ok=True)

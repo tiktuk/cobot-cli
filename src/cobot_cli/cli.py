@@ -2,12 +2,18 @@
 import typer
 import requests
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, List, Dict
 from rich.console import Console
 from rich.table import Table
 from dateutil import parser
 from dateutil.tz import tzutc
 from .settings import settings
+from .history import (
+    save_bookings,
+    get_last_bookings,
+    find_cancelled_bookings,
+    find_new_bookings,
+)
 
 app = typer.Typer()
 console = Console()
@@ -304,6 +310,113 @@ def create_resources_table(resources: list, show_description: bool = False) -> T
             table.add_row(resource_id, name, capacity, available)
 
     return table
+
+
+def create_booking_changes_table(cancelled: List[Dict], new: List[Dict]) -> Table:
+    """Create a rich table showing booking changes."""
+    table = Table(show_header=True, header_style="bold magenta")
+    table.add_column("Change")
+    table.add_column("Date")
+    table.add_column("Time")
+    table.add_column("Name")
+    table.add_column("Title")
+
+    # Add cancelled bookings in red
+    for booking in cancelled:
+        attrs = booking["attributes"]
+        from_time = parser.parse(attrs["from"])
+        to_time = parser.parse(attrs["to"])
+
+        date = from_time.strftime("%Y-%m-%d")
+        time = f"{from_time.strftime('%H:%M')} - {to_time.strftime('%H:%M')}"
+        name = attrs["name"] or "N/A"
+        title = attrs["title"] or "N/A"
+
+        table.add_row("❌ Cancelled", date, time, name, title, style="red")
+
+    # Add new bookings in green
+    for booking in new:
+        attrs = booking["attributes"]
+        from_time = parser.parse(attrs["from"])
+        to_time = parser.parse(attrs["to"])
+
+        date = from_time.strftime("%Y-%m-%d")
+        time = f"{from_time.strftime('%H:%M')} - {to_time.strftime('%H:%M')}"
+        name = attrs["name"] or "N/A"
+        title = attrs["title"] or "N/A"
+
+        table.add_row("✓ New", date, time, name, title, style="green")
+
+    return table
+
+
+@app.command()
+def monitor_bookings(
+    token: Optional[str] = typer.Option(
+        None, help="Cobot API access token (overrides settings)"
+    ),
+    resource_id: Optional[str] = typer.Option(
+        None,
+        "--resource",
+        "-r",
+        help="Specific resource ID to monitor (uses default from settings if not specified)",
+    ),
+    days: int = typer.Option(
+        7, "--days", "-d", help="Number of days to fetch bookings for"
+    ),
+):
+    """Monitor booking changes and save history."""
+    try:
+        now = datetime.now(tzutc())
+        from_date = now
+        to_date = now + timedelta(days=days)
+
+        with console.status("Fetching bookings..."):
+            used_resource_id = resource_id or settings.default_resource_id
+            if not used_resource_id:
+                console.print(
+                    "No resource ID specified and no default resource configured in settings",
+                    style="yellow",
+                )
+                return
+
+            # Fetch current bookings
+            current_bookings = fetch_bookings(
+                token, from_date, to_date, str(used_resource_id)
+            )
+
+            # Get previous bookings from history
+            previous_bookings = get_last_bookings(str(used_resource_id))
+
+            # Save current bookings to history
+            save_bookings(current_bookings, str(used_resource_id))
+
+            if not previous_bookings:
+                console.print(
+                    "First run - saved initial bookings state.", style="green"
+                )
+                if current_bookings:
+                    table = create_bookings_table(current_bookings)
+                    console.print("\nCurrent bookings:")
+                    console.print(table)
+                return
+
+            # Find changes
+            cancelled = find_cancelled_bookings(current_bookings, previous_bookings)
+            new = find_new_bookings(current_bookings, previous_bookings)
+
+            if not cancelled and not new:
+                console.print("No changes detected.", style="green")
+                return
+
+            # Show changes
+            table = create_booking_changes_table(cancelled, new)
+            console.print(table)
+
+    except requests.exceptions.HTTPError as e:
+        console.print(f"Error: Failed to fetch bookings. {str(e)}", style="red")
+    except Exception as e:
+        console.print(f"Error: {str(e)}", style="red")
 
 
 @app.command()
