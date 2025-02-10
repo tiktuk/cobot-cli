@@ -1,78 +1,91 @@
 # CoBot CLI
 
-## Cobot API
+A command-line interface for interacting with the Cobot API.
 
-> App Flow
-> 
-> Desktop or native mobile apps can use our app flow. For this, the app has to collect the email and password from the user and then exchange it for an access token.
->
->    POST https://www.cobot.me/oauth/access_token \
->    ?scope=<scopes you need, separated by spaces> \
->    &grant_type=password \
->    &username=<email of the user> \
->    &password=<password of the user> \
->    &client_id=<client id of your app> \
->    &client_secret=<client secret of your app>
+## Authentication
 
-OAuth2 Details for CoBot CLI
+The CoBot CLI uses OAuth2 for authentication with the Cobot API. There are two authentication methods available:
 
-CoBot CLI
+### 1. App Flow (For Development)
 
-Client Id:
-<YOUR_CLIENT_ID>
+For development and testing, you can use the password grant flow:
 
-Client Secret:
-<YOUR_CLIENT_SECRET>
+```bash
+POST https://www.cobot.me/oauth/access_token
+    ?scope=<scopes>
+    &grant_type=password
+    &username=<email>
+    &password=<password>
+    &client_id=<client_id>
+    &client_secret=<client_secret>
+```
 
-Scope:
-read_bookings, read_resource_categories, read_resources, read_user, and write_bookings
+### 2. OAuth2 Configuration
 
-Redirect URL:
-https://motionlabbot.tiktuk.net/callback
+For production use, the CLI is configured with the following OAuth2 details:
 
-Authorize URL:
-https://www.cobot.me/oauth/authorize
+- **Client ID**: `<YOUR_CLIENT_ID>`
+- **Client Secret**: `<YOUR_CLIENT_SECRET>`
+- **Scopes**: read_bookings, read_resource_categories, read_resources, read_user, write_bookings
+- **Redirect URL**: https://motionlabbot.tiktuk.net/callback
+- **Authorize URL**: https://www.cobot.me/oauth/authorize
+- **Access Token URL**: https://www.cobot.me/oauth/access_token
 
-Access Token URL:
-https://www.cobot.me/oauth/access_token
+The access token obtained is user-specific and should be handled securely.
 
-> Access Token
-> 
-> This access token is only valid for your user.
-> It should be mainly used for testing and for non-interactive apps.
+## API Usage
 
-    <YOUR_ACCESS_TOKEN>
+### Making API Requests
 
-> To make API requests, you can either send the token as a parameter called `access_token` or as a header like this: Authorization: Bearer <your access token>.
+You can include the access token in requests either:
+- As a query parameter: `?access_token=<token>`
+- As a header: `Authorization: Bearer <token>`
 
-[OAuth Flow | Cobot API](https://www.cobot.me/api-docs/oauth-flow)
+### Example Requests
 
-Example request:
+1. **Getting an Access Token**:
+```bash
+http POST 'https://www.cobot.me/oauth/access_token' \
+    scope='read_user' \
+    grant_type='password' \
+    username='<YOUR_EMAIL>' \
+    password='<YOUR_PASSWORD>' \
+    client_id='<YOUR_CLIENT_ID>' \
+    client_secret='<YOUR_CLIENT_SECRET>'
+```
 
-    http POST 'https://www.cobot.me/oauth/access_token?scope=read_user&grant_type=password&username=<YOUR_EMAIL>&password=<YOUR_PASSWORD>&client_id=<YOUR_CLIENT_ID>&client_secret=<YOUR_CLIENT_SECRET>'
+Response:
+```json
+{
+    "access_token": "<ACCESS_TOKEN>",
+    "token_type": "bearer"
+}
+```
 
-Returns:
+2. **Fetching Calendar Bookings**:
+```bash
+http 'https://api.cobot.me/spaces/<SPACE_ID>/bookings' \
+    filter[from]='2021-12-05T23:00:00Z' \
+    filter[to]='2021-12-12T22:59:59Z' \
+    Authorization:'Bearer <YOUR_ACCESS_TOKEN>' \
+    Accept:'application/vnd.api+json'
+```
 
-    {
-        "access_token": "<ACCESS_TOKEN>",
-        "token_type": "bearer"
-    }
+## Installation and Usage
 
-Showing the calendar bookings in the web interface:
+1. Install dependencies:
+```bash
+uv sync
+```
 
-    https://api.cobot.me/spaces/<SPACE_ID>/bookings?filter%5Bfrom%5D=2021-12-05T23%3A00%3A00Z&filter%5Bto%5D=2021-12-12T22%3A59%3A59Z
+2. Install the CLI in development mode:
+```bash
+uv pip install -e .
+```
 
-Example API request:
+3. Run the CLI:
+```bash
+uv run cobot <TOKEN>
+```
 
-    http 'https://api.cobot.me/spaces/<SPACE_ID>/bookings?filter%5Bfrom%5D=2021-12-05T23%3A00%3A00Z&filter%5Bto%5D=2021-12-12T22%3A59%3A59Z' Authorization:'Bearer <YOUR_ACCESS_TOKEN>' Accept:application/vnd.api+json
-
-## Running
-
-    $ uv sync
-    Resolved 17 packages in 11ms
-    Audited 16 packages in 1ms
-    
-    $ uv pip install -e .
-    Audited 1 package in 23ms
-    
-    $ uv run cobot <TOKEN>
+For more information about the OAuth flow, visit the [Cobot API Documentation](https://www.cobot.me/api-docs/oauth-flow).
