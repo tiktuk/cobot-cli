@@ -7,11 +7,11 @@ from rich.console import Console
 from rich.table import Table
 from dateutil import parser
 from dateutil.tz import tzutc
+from .settings import settings
 
 app = typer.Typer()
 console = Console()
 
-from .settings import settings
 
 def fetch_bookings(token: Optional[str] = None, from_date: datetime = datetime.now(tzutc()), to_date: datetime = datetime.now(tzutc()) + timedelta(days=7), resource_id: Optional[str] = None) -> list:
     """Fetch bookings from Cobot API."""
