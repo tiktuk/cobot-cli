@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import typer
 import requests
+import logging
 from datetime import datetime, timedelta
 from typing import Optional, List, Dict
 from rich.console import Console
@@ -13,6 +14,16 @@ from .history import (
     get_last_bookings,
     find_cancelled_bookings,
     find_new_bookings,
+)
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.FileHandler("cobot_bookings.log"),
+        logging.StreamHandler()
+    ]
 )
 
 app = typer.Typer()
@@ -415,8 +426,23 @@ def monitor_bookings(
             new = find_new_bookings(current_bookings, previous_bookings)
 
             if not cancelled and not new:
+                logging.info("No changes detected in bookings")
                 console.print("No changes detected.", style="green")
                 return
+
+            # Log changes
+            if cancelled:
+                for booking in cancelled:
+                    attrs = booking["attributes"]
+                    logging.info(
+                        f"Cancelled booking: {attrs['name']} - {attrs['title']} at {attrs['from']} to {attrs['to']}"
+                    )
+            if new:
+                for booking in new:
+                    attrs = booking["attributes"]
+                    logging.info(
+                        f"New booking: {attrs['name']} - {attrs['title']} at {attrs['from']} to {attrs['to']}"
+                    )
 
             # Show changes
             table = create_booking_changes_table(cancelled, new)
