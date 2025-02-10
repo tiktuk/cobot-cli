@@ -79,7 +79,10 @@ def get_bookings(
         None, help="Cobot API access token (overrides settings)"
     ),
     resource_id: Optional[str] = typer.Option(
-        None, "--resource", "-r", help="Specific resource ID to filter"
+        None,
+        "--resource",
+        "-r",
+        help="Specific resource ID to filter (uses default from settings if not specified)",
     ),
     days: int = typer.Option(
         7, "--days", "-d", help="Number of days to fetch bookings for"
@@ -92,7 +95,12 @@ def get_bookings(
         to_date = now + timedelta(days=days)
 
         with console.status("Fetching bookings..."):
-            bookings = fetch_bookings(token, from_date, to_date, resource_id)
+            used_resource_id = (
+                resource_id or str(settings.default_resource_id)
+                if settings.default_resource_id
+                else None
+            )
+            bookings = fetch_bookings(token, from_date, to_date, used_resource_id)
 
         if not bookings:
             console.print(
@@ -204,7 +212,10 @@ def show_weekly_schedule(
     token: Optional[str] = typer.Option(
         None, help="Cobot API access token (overrides settings)"
     ),
-    resource_id: str = typer.Argument(..., help="Resource ID to show schedule for"),
+    resource_id: Optional[str] = typer.Argument(
+        None,
+        help="Resource ID to show schedule for (uses default from settings if not specified)",
+    ),
     days: int = typer.Option(7, "--days", "-d", help="Number of days to show"),
 ):
     """Show a weekly schedule for a specific resource with days as columns."""
@@ -214,7 +225,12 @@ def show_weekly_schedule(
         to_date = from_date + timedelta(days=days)
 
         with console.status("Fetching schedule..."):
-            bookings = fetch_bookings(token, from_date, to_date, resource_id)
+            used_resource_id = (
+                resource_id or str(settings.default_resource_id)
+                if settings.default_resource_id
+                else None
+            )
+            bookings = fetch_bookings(token, from_date, to_date, used_resource_id)
 
         if not bookings:
             console.print(

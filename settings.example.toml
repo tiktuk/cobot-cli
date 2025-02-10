@@ -1,3 +1,4 @@
 space_id = ""  # Your Cobot space ID
 api_base = "https://api.cobot.me"
 access_token = ""  # Your Cobot API access token
+default_resource_id = ""  # Optional: Default resource ID to use when none is specified
