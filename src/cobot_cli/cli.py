@@ -210,8 +210,8 @@ def show_weekly_schedule(
     """Show a weekly schedule for a specific resource with days as columns."""
     try:
         now = datetime.now(tzutc())
-        from_date = now
-        to_date = now + timedelta(days=days)
+        from_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        to_date = from_date + timedelta(days=days)
 
         with console.status("Fetching schedule..."):
             bookings = fetch_bookings(token, from_date, to_date, resource_id)
