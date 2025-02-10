@@ -21,7 +21,7 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
     handlers=[
-        logging.FileHandler("cobot_bookings.log"),
+        logging.FileHandler(str(settings.log_file)),
         logging.StreamHandler()
     ]
 )

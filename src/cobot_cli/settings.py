@@ -26,9 +26,18 @@ settings = Dynaconf(
             default=30,
             is_type_of=int,
         ),
+        Validator(
+            "log_file",
+            default="logs/cobot.log",
+            is_type_of=str,
+        ),
     ],
 )
 
 # Ensure data_dir is expanded and exists
 settings.data_dir = os.path.expanduser(str(settings.data_dir))
 os.makedirs(settings.data_dir, exist_ok=True)
+
+# Ensure log file path is absolute and its directory exists
+settings.log_file = os.path.join(settings.data_dir, str(settings.log_file))
+os.makedirs(os.path.dirname(settings.log_file), exist_ok=True)

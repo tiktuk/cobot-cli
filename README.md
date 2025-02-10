@@ -18,6 +18,7 @@ space_id = "your-cobot-space-id"  # Required: Your Cobot space ID
 api_base = "https://api.cobot.me"  # Optional: API base URL
 access_token = "your-cobot-access-token"  # Your Cobot API access token
 data_dir = "~/.local/share/cobot"  # Optional: Directory for storing booking history
+log_file = "logs/cobot.log"  # Optional: Log file path (relative to data_dir)
 ```
 
 You can also use environment variables with the `COBOT_` prefix:
@@ -95,4 +96,21 @@ This allows for:
 - No database setup required
 
 The data directory can be configured in settings.toml using the `data_dir` option. The default location is `~/.local/share/cobot`.
+
+## Logging
+
+The CLI logs all booking changes (new bookings and cancellations) to help track and audit changes over time. Logs include:
+- Timestamps for all events
+- Details of cancelled bookings
+- Details of new bookings
+- Booking information including names, titles, and times
+
+The log file location can be configured in settings.toml using the `log_file` option. By default, logs are stored in `~/.local/share/cobot/logs/cobot.log`. The path is relative to the configured `data_dir`.
+
+Example log entries:
+```
+2024-02-11 00:03:44,123 - INFO - New booking: John Doe - Team Meeting at 2024-02-12T09:00:00Z to 2024-02-12T10:00:00Z
+2024-02-11 00:03:44,124 - INFO - Cancelled booking: Jane Smith - Workshop at 2024-02-13T14:00:00Z to 2024-02-13T16:00:00Z
+```
+
 - `--resource` / `-r`: Filter bookings by resource ID
