@@ -7,7 +7,6 @@ settings = Dynaconf(
         "~/.config/cobot/settings.toml",  # user specific
         "settings.toml",  # local
     ],
-    environments=True,
     load_dotenv=True,
     validators=[
         Validator("space_id", must_exist=True, is_type_of=str),

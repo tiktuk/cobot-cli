@@ -1,0 +1,3 @@
+space_id = ""  # Your Cobot space ID
+api_base = "https://api.cobot.me"
+access_token = ""  # Your Cobot API access token

@@ -16,14 +16,7 @@ Example configuration file:
 # Default settings
 space_id = "your-cobot-space-id"  # Required: Your Cobot space ID
 api_base = "https://api.cobot.me"  # Optional: API base URL
-
-[development]
-# Development environment specific settings
-api_base = "https://api.cobot.me"
-
-[production]
-# Production environment specific settings
-api_base = "https://api.cobot.me"
+access_token = "your-cobot-access-token"  # Your Cobot API access token
 ```
 
 You can also use environment variables with the `COBOT_` prefix:
