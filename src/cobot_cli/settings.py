@@ -1,10 +1,11 @@
 from dynaconf import Dynaconf, Validator
+import os.path
 
 settings = Dynaconf(
     envvar_prefix="COBOT",
     settings_files=[
         "/etc/cobot/settings.toml",  # system wide
-        "~/.config/cobot/settings.toml",  # user specific
+        os.path.expanduser("~/.config/cobot/settings.toml"),  # user specific
         "settings.toml",  # local
     ],
     load_dotenv=True,
