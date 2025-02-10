@@ -231,5 +231,66 @@ def show_weekly_schedule(
         console.print(f"Error: {str(e)}", style="red")
 
 
+def fetch_resources(token: Optional[str] = None) -> list:
+    """Fetch resources from Cobot API."""
+    headers = {
+        "Authorization": f"Bearer {token or settings.access_token}",
+        "Accept": "application/vnd.api+json",
+    }
+
+    url = f"{settings.api_base}/spaces/{settings.space_id}/resources"
+
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()
+
+    return response.json()["data"]
+
+
+def create_resources_table(resources: list) -> Table:
+    """Create a rich table for resources."""
+    table = Table(show_header=True, header_style="bold magenta")
+    table.add_column("ID")
+    table.add_column("Name")
+    table.add_column("Description")
+    table.add_column("Capacity")
+    table.add_column("Available")
+
+    for resource in resources:
+        attrs = resource["attributes"]
+        resource_id = resource["id"]
+        name = attrs.get("name", "N/A")
+        description = attrs.get("description", "N/A")
+        capacity = str(attrs.get("capacity", "N/A"))
+        available = "✓" if attrs.get("available", False) else "✗"
+
+        table.add_row(resource_id, name, description, capacity, available)
+
+    return table
+
+
+@app.command()
+def list_resources(
+    token: Optional[str] = typer.Option(
+        None, help="Cobot API access token (overrides settings)"
+    ),
+):
+    """List all resources in your coworking space."""
+    try:
+        with console.status("Fetching resources..."):
+            resources = fetch_resources(token)
+
+        if not resources:
+            console.print("No resources found.", style="yellow")
+            return
+
+        table = create_resources_table(resources)
+        console.print(table)
+
+    except requests.exceptions.HTTPError as e:
+        console.print(f"Error: Failed to fetch resources. {str(e)}", style="red")
+    except Exception as e:
+        console.print(f"Error: {str(e)}", style="red")
+
+
 def main():
     app()
