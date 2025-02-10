@@ -21,6 +21,11 @@ settings = Dynaconf(
             default="~/.local/share/cobot",
             is_type_of=str,
         ),
+        Validator(
+            "monitor_days_ahead",
+            default=30,
+            is_type_of=int,
+        ),
     ],
 )
 

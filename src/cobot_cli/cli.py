@@ -91,14 +91,18 @@ def get_bookings(
         help="Specific resource ID to filter (uses default from settings if not specified)",
     ),
     days: int = typer.Option(
-        7, "--days", "-d", help="Number of days to fetch bookings for"
+        None,
+        "--days",
+        "-d",
+        help="Number of days to fetch bookings for (default: from settings)",
     ),
 ):
     """Fetch and display bookings from your coworking space."""
     try:
         now = datetime.now(tzutc())
+        days_to_fetch = days if days is not None else settings.monitor_days_ahead
         from_date = now
-        to_date = now + timedelta(days=days)
+        to_date = now + timedelta(days=days_to_fetch)
 
         with console.status("Fetching bookings..."):
             used_resource_id = resource_id or settings.default_resource_id
@@ -362,14 +366,19 @@ def monitor_bookings(
         help="Specific resource ID to monitor (uses default from settings if not specified)",
     ),
     days: int = typer.Option(
-        7, "--days", "-d", help="Number of days to fetch bookings for"
+        None, "--days", "-d", help="Number of days to monitor (default: from settings.monitor_days_ahead)"
     ),
 ):
-    """Monitor booking changes and save history."""
+    """Monitor booking changes and save history.
+    
+    Fetches bookings for the configured monitoring period (set by monitor_days_ahead in settings),
+    saves them to a JSONL file, and compares with the previous state to detect changes.
+    """
     try:
         now = datetime.now(tzutc())
+        days_to_monitor = days if days is not None else settings.monitor_days_ahead
         from_date = now
-        to_date = now + timedelta(days=days)
+        to_date = now + timedelta(days=days_to_monitor)
 
         with console.status("Fetching bookings..."):
             used_resource_id = resource_id or settings.default_resource_id
