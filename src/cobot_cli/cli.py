@@ -117,7 +117,7 @@ def create_weekly_table(bookings: list, from_date: datetime, days: int) -> Table
     table.add_column("Time")
     for i in range(days):
         current_date = from_date + timedelta(days=i)
-        table.add_column(current_date.strftime("%a - %d %b"))
+        table.add_column(current_date.strftime("%a %d %b"))  # Mon 10 Feb
 
     # Group bookings by day and time
     daily_bookings = {i: [] for i in range(days)}
