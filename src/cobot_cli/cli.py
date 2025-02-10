@@ -97,7 +97,10 @@ def get_bookings(
         with console.status("Fetching bookings..."):
             used_resource_id = resource_id or settings.default_resource_id
             if not used_resource_id:
-                console.print("No resource ID specified and no default resource configured in settings", style="yellow")
+                console.print(
+                    "No resource ID specified and no default resource configured in settings",
+                    style="yellow",
+                )
                 return
             bookings = fetch_bookings(token, from_date, to_date, str(used_resource_id))
 
@@ -130,7 +133,9 @@ def create_weekly_table(bookings: list, from_date: datetime, days: int) -> Table
     daily_bookings = {i: [] for i in range(days)}
     for booking in bookings:
         attrs = booking["attributes"]
-        from_time = parser.parse(attrs["from"]).astimezone()  # Convert to local timezone
+        from_time = parser.parse(
+            attrs["from"]
+        ).astimezone()  # Convert to local timezone
         days_diff = (from_time.date() - from_date.astimezone().date()).days
         if 0 <= days_diff < days:
             daily_bookings[days_diff].append(booking)
@@ -141,8 +146,12 @@ def create_weekly_table(bookings: list, from_date: datetime, days: int) -> Table
     for day_bookings in daily_bookings.values():
         for booking in day_bookings:
             attrs = booking["attributes"]
-            from_time = parser.parse(attrs["from"]).astimezone()  # Convert to local timezone
-            to_time = parser.parse(attrs["to"]).astimezone()  # Convert to local timezone
+            from_time = parser.parse(
+                attrs["from"]
+            ).astimezone()  # Convert to local timezone
+            to_time = parser.parse(
+                attrs["to"]
+            ).astimezone()  # Convert to local timezone
             start_hours.append(from_time.hour)
             # If end time is exactly on the hour, we don't need an extra slot
             end_hour = to_time.hour if to_time.minute > 0 else to_time.hour - 1
@@ -175,8 +184,12 @@ def create_weekly_table(bookings: list, from_date: datetime, days: int) -> Table
 
             for booking in day_bookings:
                 attrs = booking["attributes"]
-                from_time = parser.parse(attrs["from"])
-                to_time = parser.parse(attrs["to"])
+                from_time = parser.parse(
+                    attrs["from"]
+                ).astimezone()  # Convert to local timezone
+                to_time = parser.parse(
+                    attrs["to"]
+                ).astimezone()  # Convert to local timezone
 
                 # Check if booking overlaps with this time slot
                 booking_start_hour = from_time.hour
@@ -187,7 +200,11 @@ def create_weekly_table(bookings: list, from_date: datetime, days: int) -> Table
                     name = attrs["name"]
 
                     # Append the title if it exists, otherwise show name
-                    cell_info = f"{name.strip()}: {title.strip()}" if title is not None else name.strip()
+                    cell_info = (
+                        f"{name.strip()}: {title.strip()}"
+                        if title is not None
+                        else name.strip()
+                    )
 
                     # Show name only in the first slot of the booking
                     cell_text = (
@@ -226,7 +243,10 @@ def show_weekly_schedule(
         with console.status("Fetching schedule..."):
             used_resource_id = resource_id or settings.default_resource_id
             if not used_resource_id:
-                console.print("Error: No resource ID provided and no default resource ID set in settings.", style="red")
+                console.print(
+                    "Error: No resource ID provided and no default resource ID set in settings.",
+                    style="red",
+                )
                 return
             bookings = fetch_bookings(token, from_date, to_date, str(used_resource_id))
 
