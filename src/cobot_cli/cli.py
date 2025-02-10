@@ -63,8 +63,8 @@ def create_bookings_table(bookings: list) -> Table:
 
     for booking in bookings:
         attrs = booking["attributes"]
-        from_time = parser.parse(attrs["from"])
-        to_time = parser.parse(attrs["to"])
+        from_time = parser.parse(attrs["from"]).astimezone()  # Convert to local timezone
+        to_time = parser.parse(attrs["to"]).astimezone()  # Convert to local timezone
 
         # Format date and time
         date = from_time.strftime("%Y-%m-%d")
@@ -328,8 +328,8 @@ def create_booking_changes_table(cancelled: List[Dict], new: List[Dict]) -> Tabl
     # Add cancelled bookings in red
     for booking in cancelled:
         attrs = booking["attributes"]
-        from_time = parser.parse(attrs["from"])
-        to_time = parser.parse(attrs["to"])
+        from_time = parser.parse(attrs["from"]).astimezone()  # Convert to local timezone
+        to_time = parser.parse(attrs["to"]).astimezone()  # Convert to local timezone
 
         date = from_time.strftime("%Y-%m-%d")
         time = f"{from_time.strftime('%H:%M')} - {to_time.strftime('%H:%M')}"
@@ -341,8 +341,8 @@ def create_booking_changes_table(cancelled: List[Dict], new: List[Dict]) -> Tabl
     # Add new bookings in green
     for booking in new:
         attrs = booking["attributes"]
-        from_time = parser.parse(attrs["from"])
-        to_time = parser.parse(attrs["to"])
+        from_time = parser.parse(attrs["from"]).astimezone()  # Convert to local timezone
+        to_time = parser.parse(attrs["to"]).astimezone()  # Convert to local timezone
 
         date = from_time.strftime("%Y-%m-%d")
         time = f"{from_time.strftime('%H:%M')} - {to_time.strftime('%H:%M')}"
