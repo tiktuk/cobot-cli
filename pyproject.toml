@@ -1,0 +1,16 @@
+[project]
+name = "motionlabbot"
+version = "0.1.0"
+description = "CLI tool to fetch Cobot bookings"
+dependencies = ["typer", "requests", "python-dateutil"]
+requires-python = ">=3.8"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project.scripts]
+motionlab = "motionlabbot.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/motionlabbot"]
