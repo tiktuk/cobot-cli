@@ -246,12 +246,13 @@ def fetch_resources(token: Optional[str] = None) -> list:
     return response.json()["data"]
 
 
-def create_resources_table(resources: list) -> Table:
+def create_resources_table(resources: list, show_description: bool = False) -> Table:
     """Create a rich table for resources."""
     table = Table(show_header=True, header_style="bold magenta")
     table.add_column("ID")
     table.add_column("Name")
-    table.add_column("Description")
+    if show_description:
+        table.add_column("Description")
     table.add_column("Capacity")
     table.add_column("Available")
 
@@ -259,11 +260,14 @@ def create_resources_table(resources: list) -> Table:
         attrs = resource["attributes"]
         resource_id = resource["id"]
         name = attrs.get("name", "N/A")
-        description = attrs.get("description", "N/A")
         capacity = str(attrs.get("capacity", "N/A"))
         available = "✓" if attrs.get("available", False) else "✗"
 
-        table.add_row(resource_id, name, description, capacity, available)
+        if show_description:
+            description = attrs.get("description", "N/A")
+            table.add_row(resource_id, name, description, capacity, available)
+        else:
+            table.add_row(resource_id, name, capacity, available)
 
     return table
 
@@ -272,6 +276,9 @@ def create_resources_table(resources: list) -> Table:
 def list_resources(
     token: Optional[str] = typer.Option(
         None, help="Cobot API access token (overrides settings)"
+    ),
+    show_description: bool = typer.Option(
+        False, "--description", "-d", help="Show resource descriptions"
     ),
 ):
     """List all resources in your coworking space."""
@@ -283,7 +290,7 @@ def list_resources(
             console.print("No resources found.", style="yellow")
             return
 
-        table = create_resources_table(resources)
+        table = create_resources_table(resources, show_description)
         console.print(table)
 
     except requests.exceptions.HTTPError as e:
