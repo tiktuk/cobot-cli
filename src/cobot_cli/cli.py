@@ -162,7 +162,7 @@ def create_weekly_table(bookings: list, from_date: datetime, days: int) -> Table
         for day_idx in range(days):
             day_bookings = daily_bookings[day_idx]
             cell_bookings = []
-            
+
             # Sort bookings by start time for this day
             day_bookings.sort(key=lambda b: parser.parse(b["attributes"]["from"]))
 
@@ -176,22 +176,20 @@ def create_weekly_table(bookings: list, from_date: datetime, days: int) -> Table
                 booking_end_hour = to_time.hour
 
                 if booking_start_hour < slot_end and booking_end_hour > slot_start:
-                    name = attrs["name"] or "N/A"
-                    title = attrs["title"] or "N/A"
-                    
+                    title = attrs["title"]
+                    name = attrs["name"]
+
+                    # Append the title if it exists, otherwise show name
+                    cell_info = f"{name.strip()}: {title.strip()}" if title is not None else name.strip()
+
                     # Show name only in the first slot of the booking
-                    display_name = name if slot_start == booking_start_hour else "-" * len(name)
-                    
-                    # Keep the title even when using dash for name
-                    if title == "N/A":
-                        details = display_name
-                    else:
-                        # If using dash and there's a title, just show the title
-                        if display_name == "-":
-                            details = title
-                        else:
-                            details = f"{display_name}: {title}"
-                    cell_bookings.append(details)
+                    cell_text = (
+                        cell_info
+                        if slot_start == booking_start_hour
+                        else "-" * len(cell_info)
+                    )
+
+                    cell_bookings.append(cell_text)
 
             if cell_bookings:
                 table_row[day_idx + 1] = "\n".join(cell_bookings)
