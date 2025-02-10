@@ -101,11 +101,11 @@ def get_bookings(
         console.print(f"Error: {str(e)}", style="red")
 
 def create_weekly_table(bookings: list, from_date: datetime, days: int) -> Table:
-    """Create a rich table with days as columns and time slots as rows."""
+    """Create a rich table with days as columns and hourly time slots as rows."""
     table = Table(show_header=True, header_style="bold magenta")
     
     # Add columns for time and each day
-    table.add_column("Time/Details")
+    table.add_column("Time")
     for i in range(days):
         current_date = from_date + timedelta(days=i)
         table.add_column(current_date.strftime("%Y-%m-%d"))
@@ -119,35 +119,42 @@ def create_weekly_table(bookings: list, from_date: datetime, days: int) -> Table
         if 0 <= days_diff < days:
             daily_bookings[days_diff].append(booking)
     
-    # Create rows for each booking
-    rows = []
-    for day_idx in range(days):
-        day_bookings = daily_bookings[day_idx]
-        for booking in day_bookings:
-            attrs = booking["attributes"]
-            from_time = parser.parse(attrs["from"])
-            to_time = parser.parse(attrs["to"])
-            time_str = f"{from_time.strftime('%H:%M')} - {to_time.strftime('%H:%M')}"
-            name = attrs["name"] or "N/A"
-            title = attrs["title"] or "N/A"
-            
-            # Create a row entry
-            details = name if title == "N/A" else f"{name}: {title}"
-            row_data = {
-                "time": time_str,
-                "details": details,
-                "day_idx": day_idx
-            }
-            rows.append(row_data)
+    # Create time slots from 09:00 to 18:00
+    time_slots = []
+    for hour in range(9, 18):
+        time_slots.append(f"{hour:02d}:00 - {hour+1:02d}:00")
     
-    # Sort rows by time
-    rows.sort(key=lambda x: x["time"])
-    
-    # Add rows to table
-    for row in rows:
+    # Add a row for each time slot
+    for time_slot in time_slots:
+        slot_start = int(time_slot.split(':')[0])
+        slot_end = slot_start + 1
+        
         table_row = [""] * (days + 1)
-        table_row[0] = row["time"]
-        table_row[row["day_idx"] + 1] = row["details"]
+        table_row[0] = time_slot
+        
+        # Check each day's bookings
+        for day_idx in range(days):
+            day_bookings = daily_bookings[day_idx]
+            cell_bookings = []
+            
+            for booking in day_bookings:
+                attrs = booking["attributes"]
+                from_time = parser.parse(attrs["from"])
+                to_time = parser.parse(attrs["to"])
+                
+                # Check if booking overlaps with this time slot
+                booking_start_hour = from_time.hour
+                booking_end_hour = to_time.hour
+                
+                if booking_start_hour < slot_end and booking_end_hour > slot_start:
+                    name = attrs["name"] or "N/A"
+                    title = attrs["title"] or "N/A"
+                    details = name if title == "N/A" else f"{name}: {title}"
+                    cell_bookings.append(details)
+            
+            if cell_bookings:
+                table_row[day_idx + 1] = "\n".join(cell_bookings)
+        
         table.add_row(*table_row)
     
     return table
