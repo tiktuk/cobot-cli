@@ -1,0 +1,12 @@
+# Default settings for cobot-cli
+space_id = ""  # Your Cobot space ID
+api_base = "https://api.cobot.me"
+access_token = ""  # Your Cobot API access token
+
+[development]
+# Development environment specific settings
+api_base = "https://api.cobot.me"
+
+[production]
+# Production environment specific settings
+api_base = "https://api.cobot.me"

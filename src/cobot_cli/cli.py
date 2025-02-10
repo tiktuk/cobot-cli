@@ -11,12 +11,12 @@ from dateutil.tz import tzutc
 app = typer.Typer()
 console = Console()
 
-COBOT_API_BASE = "https://api.cobot.me"
+from .settings import settings
 
-def fetch_bookings(token: str, from_date: datetime, to_date: datetime, resource_id: Optional[str] = None) -> list:
+def fetch_bookings(token: Optional[str] = None, from_date: datetime = datetime.now(tzutc()), to_date: datetime = datetime.now(tzutc()) + timedelta(days=7), resource_id: Optional[str] = None) -> list:
     """Fetch bookings from Cobot API."""
     headers = {
-        "Authorization": f"Bearer {token}",
+        "Authorization": f"Bearer {token or settings.access_token}",
         "Accept": "application/vnd.api+json"
     }
     params = {
@@ -24,9 +24,7 @@ def fetch_bookings(token: str, from_date: datetime, to_date: datetime, resource_
         "filter[to]": to_date.isoformat(),
     }
     
-    # The space ID is hardcoded based on the sample data
-    space_id = "9cc8fb9aa608530497f20946e1d083ea"
-    url = f"{COBOT_API_BASE}/spaces/{space_id}/bookings"
+    url = f"{settings.api_base}/spaces/{settings.space_id}/bookings"
     
     response = requests.get(url, headers=headers, params=params)
     response.raise_for_status()
@@ -75,7 +73,7 @@ def create_bookings_table(bookings: list) -> Table:
 
 @app.command()
 def get_bookings(
-    token: str = typer.Argument(..., help="Cobot API access token"),
+    token: Optional[str] = typer.Option(None, help="Cobot API access token (overrides settings)"),
     resource_id: Optional[str] = typer.Option(None, "--resource", "-r", help="Specific resource ID to filter"),
     days: int = typer.Option(7, "--days", "-d", help="Number of days to fetch bookings for")
 ):
@@ -178,7 +176,7 @@ def create_weekly_table(bookings: list, from_date: datetime, days: int) -> Table
 
 @app.command()
 def show_weekly_schedule(
-    token: str = typer.Argument(..., help="Cobot API access token"),
+    token: Optional[str] = typer.Option(None, help="Cobot API access token (overrides settings)"),
     resource_id: str = typer.Argument(..., help="Resource ID to show schedule for"),
     days: int = typer.Option(7, "--days", "-d", help="Number of days to show")
 ):
