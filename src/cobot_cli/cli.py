@@ -226,7 +226,7 @@ def show_weekly_schedule(
         with console.status("Fetching schedule..."):
             used_resource_id = resource_id or settings.default_resource_id
             if not used_resource_id:
-                console.print("No resource ID specified and no default resource configured in settings", style="yellow")
+                console.print("Error: No resource ID provided and no default resource ID set in settings.", style="red")
                 return
             bookings = fetch_bookings(token, from_date, to_date, str(used_resource_id))
 
