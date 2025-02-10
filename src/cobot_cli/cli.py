@@ -119,10 +119,27 @@ def create_weekly_table(bookings: list, from_date: datetime, days: int) -> Table
         if 0 <= days_diff < days:
             daily_bookings[days_diff].append(booking)
     
-    # Create time slots from 09:00 to 18:00
+    # Find earliest and latest times from bookings
+    start_hours = []
+    end_hours = []
+    for day_bookings in daily_bookings.values():
+        for booking in day_bookings:
+            attrs = booking["attributes"]
+            from_time = parser.parse(attrs["from"])
+            to_time = parser.parse(attrs["to"])
+            start_hours.append(from_time.hour)
+            # If end time is exactly on the hour, we don't need an extra slot
+            end_hour = to_time.hour if to_time.minute > 0 else to_time.hour - 1
+            end_hours.append(end_hour)
+    
+    # Get the range of hours needed (minimum 1 hour if no bookings)
+    min_hour = min(start_hours) if start_hours else 0
+    max_hour = max(end_hours) if end_hours else 0
+    
+    # Create time slots
     time_slots = []
-    for hour in range(9, 18):
-        time_slots.append(f"{hour:02d}:00 - {hour+1:02d}:00")
+    for hour in range(min_hour, max_hour + 2):  # +2 to include the last hour
+        time_slots.append(f"{hour:02d}:00 - {(hour+1):02d}:00")
     
     # Add a row for each time slot
     for time_slot in time_slots:
