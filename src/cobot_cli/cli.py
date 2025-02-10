@@ -180,7 +180,7 @@ def create_weekly_table(bookings: list, from_date: datetime, days: int) -> Table
                     title = attrs["title"] or "N/A"
                     
                     # Show name only in the first slot of the booking
-                    display_name = name if slot_start == booking_start_hour else "-"
+                    display_name = name if slot_start == booking_start_hour else "-" * len(name)
                     
                     # Keep the title even when using dash for name
                     if title == "N/A":
