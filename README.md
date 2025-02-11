@@ -15,6 +15,7 @@ Example configuration file:
 ```toml
 # Default settings
 space_id = "your-cobot-space-id"  # Required: Your Cobot space ID
+space_subdomain = "your-space-subdomain"  # Required: Your space subdomain (e.g., 'co-up' for co-up.cobot.me)
 api_base = "https://api.cobot.me"  # Optional: API base URL
 access_token = "your-cobot-access-token"  # Your Cobot API access token
 data_dir = "~/.local/share/cobot"  # Optional: Directory for storing booking history
@@ -29,6 +30,7 @@ You can also use environment variables with the `COBOT_` prefix:
 
 ```bash
 export COBOT_SPACE_ID="your-cobot-space-id"
+export COBOT_SPACE_SUBDOMAIN="your-space-subdomain"
 export COBOT_API_BASE="https://api.cobot.me"
 ```
 
