@@ -2,6 +2,7 @@ import json
 import os
 from datetime import datetime
 from typing import Dict, List, Optional, Set
+from dateutil import parser
 from .settings import settings
 
 
@@ -49,14 +50,19 @@ def get_last_bookings(resource_id: str) -> Optional[List[Dict]]:
 
 
 def find_cancelled_bookings(current: List[Dict], previous: List[Dict]) -> List[Dict]:
-    """Find bookings that were present in previous but not in current."""
+    """Find bookings that were cancelled (not just ended naturally)."""
     current_ids = {b.get("id") or b.get("attributes", {}).get("id") for b in current}
+    current_time = datetime.now()
     cancelled = []
 
     for booking in previous:
         booking_id = booking.get("id") or booking.get("attributes", {}).get("id")
         if booking_id not in current_ids:
-            cancelled.append(booking)
+            # Check if the booking should have ended naturally
+            end_time = parser.parse(booking["attributes"]["to"])
+            # Only consider it cancelled if it disappeared before its end time
+            if end_time > current_time:
+                cancelled.append(booking)
 
     return cancelled
 
