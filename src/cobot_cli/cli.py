@@ -27,6 +27,13 @@ def format_time_range(from_time: datetime, to_time: datetime) -> str:
     """Format time range in a consistent way across the application."""
     return f"{from_time.strftime('%H:%M')} - {to_time.strftime('%H:%M')}"
 
+def format_booking_info(name: str, title: Optional[str]) -> str:
+    """Format booking info consistently, omitting title if None or empty."""
+    name = name or "N/A"
+    if title and title.strip():
+        return f"{name}: {title.strip()}"
+    return name
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -246,15 +253,9 @@ def create_weekly_table(bookings: list, from_date: datetime, days: int) -> Table
                 booking_end_hour = to_time.hour
 
                 if booking_start_hour < slot_end and booking_end_hour > slot_start:
-                    title = attrs["title"]
                     name = attrs["name"]
-
-                    # Append the title if it exists, otherwise show name
-                    cell_info = (
-                        f"{name.strip()}: {title.strip()}"
-                        if title is not None
-                        else name.strip()
-                    )
+                    title = attrs["title"]
+                    cell_info = format_booking_info(name, title)
 
                     # Show name only in the first slot of the booking
                     cell_text = (
@@ -464,13 +465,13 @@ def monitor_bookings(
                 for booking in cancelled:
                     attrs = booking["attributes"]
                     logging.info(
-                        f"Cancelled booking: {attrs['name']} - {attrs['title']} at {attrs['from']} to {attrs['to']}"
+                        f"Cancelled booking: {format_booking_info(attrs['name'], attrs['title'])} at {attrs['from']} to {attrs['to']}"
                     )
             if new:
                 for booking in new:
                     attrs = booking["attributes"]
                     logging.info(
-                        f"New booking: {attrs['name']} - {attrs['title']} at {attrs['from']} to {attrs['to']}"
+                        f"New booking: {format_booking_info(attrs['name'], attrs['title'])} at {attrs['from']} to {attrs['to']}"
                     )
 
             # Show changes and prepare telegram message
@@ -488,9 +489,8 @@ def monitor_bookings(
                     to_time = parser.parse(attrs["to"]).astimezone()
                     date = format_date(from_time)
                     time = format_time_range(from_time, to_time)
-                    name = attrs["name"] or "N/A"
-                    title = attrs["title"] or "N/A"
-                    message_parts.append(f"❌ {date} {time}\n   {name}: {title}")
+                    booking_info = format_booking_info(attrs["name"], attrs["title"])
+                    message_parts.append(f"❌ {date} {time}\n   {booking_info}")
 
             if new:
                 message_parts.append("\n<b>New Bookings:</b>")
@@ -500,9 +500,8 @@ def monitor_bookings(
                     to_time = parser.parse(attrs["to"]).astimezone()
                     date = format_date(from_time)
                     time = format_time_range(from_time, to_time)
-                    name = attrs["name"] or "N/A"
-                    title = attrs["title"] or "N/A"
-                    message_parts.append(f"✓ {date} {time}\n   {name}: {title}")
+                    booking_info = format_booking_info(attrs["name"], attrs["title"])
+                    message_parts.append(f"✓ {date} {time}\n   {booking_info}")
 
             # Send telegram notification
             message = "\n".join(message_parts)
