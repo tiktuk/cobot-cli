@@ -19,13 +19,16 @@ from .history import (
     find_new_bookings,
 )
 
+
 def format_date(dt: datetime) -> str:
     """Format date in a consistent way across the application."""
     return dt.strftime("%a %d %b")  # e.g. Mon 10 Feb
 
+
 def format_time_range(from_time: datetime, to_time: datetime) -> str:
     """Format time range in a consistent way across the application."""
     return f"{from_time.strftime('%H:%M')} - {to_time.strftime('%H:%M')}"
+
 
 def format_booking_info(name: str, title: Optional[str]) -> str:
     """Format booking info consistently, omitting title if None or empty."""
@@ -34,14 +37,12 @@ def format_booking_info(name: str, title: Optional[str]) -> str:
         return f"{name}: {title.strip()}"
     return name
 
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.FileHandler(str(settings.log_file)),
-        logging.StreamHandler()
-    ]
+    handlers=[logging.FileHandler(str(settings.log_file)), logging.StreamHandler()],
 )
 
 app = typer.Typer()
@@ -50,16 +51,16 @@ console = Console()
 
 async def send_telegram_message(message: str) -> None:
     """Send a message to Telegram using configured bot."""
-    if not hasattr(settings, 'telegram_bot_token') or not hasattr(settings, 'telegram_chat_id'):
+    if not hasattr(settings, "telegram_bot_token") or not hasattr(
+        settings, "telegram_chat_id"
+    ):
         console.print("Telegram configuration missing in settings", style="yellow")
         return
 
     try:
         bot = Bot(token=str(settings.telegram_bot_token))
         await bot.send_message(
-            chat_id=str(settings.telegram_chat_id),
-            text=message,
-            parse_mode='HTML'
+            chat_id=str(settings.telegram_chat_id), text=message, parse_mode="HTML"
         )
     except TelegramError as e:
         console.print(f"Failed to send Telegram message: {str(e)}", style="red")
@@ -110,7 +111,9 @@ def create_bookings_table(bookings: list) -> Table:
 
     for booking in bookings:
         attrs = booking["attributes"]
-        from_time = parser.parse(attrs["from"]).astimezone()  # Convert to local timezone
+        from_time = parser.parse(
+            attrs["from"]
+        ).astimezone()  # Convert to local timezone
         to_time = parser.parse(attrs["to"]).astimezone()  # Convert to local timezone
 
         # Format date and time
@@ -183,7 +186,9 @@ def fetch_my_bookings(token: Optional[str] = None) -> list:
         "Accept": "application/json",
     }
 
-    url = f"https://{settings.space_subdomain}.cobot.me/api/membership/bookings/upcoming"
+    url = (
+        f"https://{settings.space_subdomain}.cobot.me/api/membership/bookings/upcoming"
+    )
 
     response = requests.get(url, headers=headers)
     response.raise_for_status()
@@ -201,7 +206,9 @@ def create_my_bookings_table(bookings: list) -> Table:
     table.add_column("Comments")
 
     for booking in bookings:
-        from_time = parser.parse(booking["from"]).astimezone()  # Convert to local timezone
+        from_time = parser.parse(
+            booking["from"]
+        ).astimezone()  # Convert to local timezone
         to_time = parser.parse(booking["to"]).astimezone()  # Convert to local timezone
 
         # Format date and time
@@ -229,9 +236,7 @@ def my_bookings(
             bookings = fetch_my_bookings(token)
 
         if not bookings:
-            console.print(
-                "No upcoming bookings found.", style="yellow"
-            )
+            console.print("No upcoming bookings found.", style="yellow")
             return
 
         table = create_my_bookings_table(bookings)
@@ -436,7 +441,9 @@ def create_booking_changes_table(cancelled: List[Dict], new: List[Dict]) -> Tabl
     # Add cancelled bookings in red
     for booking in cancelled:
         attrs = booking["attributes"]
-        from_time = parser.parse(attrs["from"]).astimezone()  # Convert to local timezone
+        from_time = parser.parse(
+            attrs["from"]
+        ).astimezone()  # Convert to local timezone
         to_time = parser.parse(attrs["to"]).astimezone()  # Convert to local timezone
 
         date = format_date(from_time)
@@ -449,7 +456,9 @@ def create_booking_changes_table(cancelled: List[Dict], new: List[Dict]) -> Tabl
     # Add new bookings in green
     for booking in new:
         attrs = booking["attributes"]
-        from_time = parser.parse(attrs["from"]).astimezone()  # Convert to local timezone
+        from_time = parser.parse(
+            attrs["from"]
+        ).astimezone()  # Convert to local timezone
         to_time = parser.parse(attrs["to"]).astimezone()  # Convert to local timezone
 
         date = from_time.strftime("%Y-%m-%d")
@@ -474,11 +483,14 @@ def monitor_bookings(
         help="Specific resource ID to monitor (uses default from settings if not specified)",
     ),
     days: int = typer.Option(
-        None, "--days", "-d", help="Number of days to monitor (default: from settings.monitor_days_ahead)"
+        None,
+        "--days",
+        "-d",
+        help="Number of days to monitor (default: from settings.monitor_days_ahead)",
     ),
 ):
     """Monitor booking changes and save history.
-    
+
     Fetches bookings for the configured monitoring period (set by monitor_days_ahead in settings),
     saves them to a JSONL file, and compares with the previous state to detect changes.
     """
@@ -547,7 +559,7 @@ def monitor_bookings(
 
             # Create telegram message for changes
             message_parts = ["<b>Booking Changes Detected:</b>\n"]
-            
+
             if cancelled:
                 message_parts.append("\n<b>Cancelled Bookings:</b>")
                 for booking in cancelled:
