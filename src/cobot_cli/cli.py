@@ -19,6 +19,14 @@ from .history import (
     find_new_bookings,
 )
 
+def format_date(dt: datetime) -> str:
+    """Format date in a consistent way across the application."""
+    return dt.strftime("%a %d %b")  # e.g. Mon 10 Feb
+
+def format_time_range(from_time: datetime, to_time: datetime) -> str:
+    """Format time range in a consistent way across the application."""
+    return f"{from_time.strftime('%H:%M')} - {to_time.strftime('%H:%M')}"
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -99,8 +107,8 @@ def create_bookings_table(bookings: list) -> Table:
         to_time = parser.parse(attrs["to"]).astimezone()  # Convert to local timezone
 
         # Format date and time
-        date = from_time.strftime("%Y-%m-%d")
-        time = f"{from_time.strftime('%H:%M')} - {to_time.strftime('%H:%M')}"
+        date = format_date(from_time)
+        time = format_time_range(from_time, to_time)
 
         name = attrs["name"] or "N/A"
         title = attrs["title"] or "N/A"
@@ -169,7 +177,7 @@ def create_weekly_table(bookings: list, from_date: datetime, days: int) -> Table
     table.add_column("Time")
     for i in range(days):
         current_date = from_date + timedelta(days=i)
-        table.add_column(current_date.strftime("%a %d %b"))  # Mon 10 Feb
+        table.add_column(format_date(current_date))
 
     # Group bookings by day and time
     daily_bookings = {i: [] for i in range(days)}
@@ -363,8 +371,8 @@ def create_booking_changes_table(cancelled: List[Dict], new: List[Dict]) -> Tabl
         from_time = parser.parse(attrs["from"]).astimezone()  # Convert to local timezone
         to_time = parser.parse(attrs["to"]).astimezone()  # Convert to local timezone
 
-        date = from_time.strftime("%Y-%m-%d")
-        time = f"{from_time.strftime('%H:%M')} - {to_time.strftime('%H:%M')}"
+        date = format_date(from_time)
+        time = format_time_range(from_time, to_time)
         name = attrs["name"] or "N/A"
         title = attrs["title"] or "N/A"
 
@@ -478,8 +486,8 @@ def monitor_bookings(
                     attrs = booking["attributes"]
                     from_time = parser.parse(attrs["from"]).astimezone()
                     to_time = parser.parse(attrs["to"]).astimezone()
-                    date = from_time.strftime("%Y-%m-%d")
-                    time = f"{from_time.strftime('%H:%M')} - {to_time.strftime('%H:%M')}"
+                    date = format_date(from_time)
+                    time = format_time_range(from_time, to_time)
                     name = attrs["name"] or "N/A"
                     title = attrs["title"] or "N/A"
                     message_parts.append(f"❌ {date} {time}\n   {name}: {title}")
@@ -490,8 +498,8 @@ def monitor_bookings(
                     attrs = booking["attributes"]
                     from_time = parser.parse(attrs["from"]).astimezone()
                     to_time = parser.parse(attrs["to"]).astimezone()
-                    date = from_time.strftime("%Y-%m-%d")
-                    time = f"{from_time.strftime('%H:%M')} - {to_time.strftime('%H:%M')}"
+                    date = format_date(from_time)
+                    time = format_time_range(from_time, to_time)
                     name = attrs["name"] or "N/A"
                     title = attrs["title"] or "N/A"
                     message_parts.append(f"✓ {date} {time}\n   {name}: {title}")
