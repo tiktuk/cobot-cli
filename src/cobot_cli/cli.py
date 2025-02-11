@@ -464,8 +464,8 @@ def create_booking_changes_table(cancelled: List[Dict], new: List[Dict]) -> Tabl
         ).astimezone()  # Convert to local timezone
         to_time = parser.parse(attrs["to"]).astimezone()  # Convert to local timezone
 
-        date = from_time.strftime("%Y-%m-%d")
-        time = f"{from_time.strftime('%H:%M')} - {to_time.strftime('%H:%M')}"
+        date = format_date(from_time)
+        time = format_time_range(from_time, to_time)
         name = attrs["name"] or "N/A"
         title = attrs["title"] or "N/A"
 
