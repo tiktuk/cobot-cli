@@ -66,6 +66,7 @@ Show weekly schedule with a specific token:
 ```bash
 cobot show-weekly-schedule --token YOUR_API_TOKEN RESOURCE_ID
 ```
+
 Monitor bookings for changes:
 ```bash
 cobot monitor-bookings
@@ -81,24 +82,16 @@ Monitor with custom time range:
 cobot monitor-bookings --days 14
 ```
 
-The monitor command will:
-- Save booking data to a JSONL file in the configured data directory
-- Compare with previous state to detect cancellations and new bookings
-- Show changes in a color-coded table (red for cancellations, green for new bookings)
-- Send Telegram notifications for booking changes (if configured)
-- Keep a complete history of all booking states for future reference
+The monitor command will save booking data, detect changes, display them in a color-coded table, and send Telegram notifications if configured.
 
 ### Telegram Notifications
 
-When Telegram is configured (using `telegram_bot_token` and `telegram_chat_id` in settings), the monitor command will automatically send notifications for:
+When Telegram is configured, the monitor command sends notifications for:
 - New bookings (✓)
 - Cancelled bookings (❌)
 - Error conditions (e.g., API failures)
 
-Notifications are formatted with HTML and include:
-- Date and time of the booking
-- Name of the person booking
-- Title/purpose of the booking
+Notifications include booking date/time, person name, and purpose.
 
 Options:
 - `--days` / `-d`: Number of days to fetch bookings for (default: 7)
@@ -107,35 +100,13 @@ Options:
 
 ## Data Storage
 
-Booking history is stored in JSONL (JSON Lines) format in the configured data directory. Each resource's bookings are stored in a separate file named `bookings_<resource_id>.jsonl`. Each line contains a complete snapshot of bookings at a specific time, including:
-
-- Timestamp of the snapshot
-- Space ID
-- Resource ID
-- Complete booking data
-
-This allows for:
-- Easy tracking of booking changes over time
-- Simple append-only storage
-- Human-readable format
-- No database setup required
-
-The data directory can be configured in settings.toml using the `data_dir` option. The default location is `~/.local/share/cobot`.
+Booking history is stored in JSONL format in the configured data directory (`~/.local/share/cobot` by default). Each resource's bookings are stored in a separate file named `bookings_<resource_id>.jsonl`.
 
 ## Logging
 
-The CLI logs all booking changes (new bookings and cancellations) to help track and audit changes over time. Logs include:
-- Timestamps for all events
-- Details of cancelled bookings
-- Details of new bookings
-- Booking information including names, titles, and times
-
-The log file location can be configured in settings.toml using the `log_file` option. By default, logs are stored in `~/.local/share/cobot/logs/cobot.log`. The path is relative to the configured `data_dir`.
+The CLI logs booking changes to help track and audit changes over time. By default, logs are stored in `~/.local/share/cobot/logs/cobot.log`.
 
 Example log entries:
 ```
 2024-02-11 00:03:44,123 - INFO - New booking: John Doe - Team Meeting at 2024-02-12T09:00:00Z to 2024-02-12T10:00:00Z
 2024-02-11 00:03:44,124 - INFO - Cancelled booking: Jane Smith - Workshop at 2024-02-13T14:00:00Z to 2024-02-13T16:00:00Z
-```
-
-- `--resource` / `-r`: Filter bookings by resource ID
