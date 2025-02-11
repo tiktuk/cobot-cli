@@ -2,12 +2,15 @@
 import typer
 import requests
 import logging
+import asyncio
 from datetime import datetime, timedelta
 from typing import Optional, List, Dict
 from rich.console import Console
 from rich.table import Table
 from dateutil import parser
 from dateutil.tz import tzutc
+from telegram import Bot
+from telegram.error import TelegramError
 from .settings import settings
 from .history import (
     save_bookings,
@@ -28,6 +31,24 @@ logging.basicConfig(
 
 app = typer.Typer()
 console = Console()
+
+
+async def send_telegram_message(message: str) -> None:
+    """Send a message to Telegram using configured bot."""
+    if not hasattr(settings, 'telegram_bot_token') or not hasattr(settings, 'telegram_chat_id'):
+        console.print("Telegram configuration missing in settings", style="yellow")
+        return
+
+    try:
+        bot = Bot(token=str(settings.telegram_bot_token))
+        await bot.send_message(
+            chat_id=str(settings.telegram_chat_id),
+            text=message,
+            parse_mode='HTML'
+        )
+    except TelegramError as e:
+        console.print(f"Failed to send Telegram message: {str(e)}", style="red")
+        logging.error(f"Telegram error: {str(e)}")
 
 
 def fetch_bookings(
@@ -444,14 +465,49 @@ def monitor_bookings(
                         f"New booking: {attrs['name']} - {attrs['title']} at {attrs['from']} to {attrs['to']}"
                     )
 
-            # Show changes
+            # Show changes and prepare telegram message
             table = create_booking_changes_table(cancelled, new)
             console.print(table)
 
+            # Create telegram message for changes
+            message_parts = ["<b>Booking Changes Detected:</b>\n"]
+            
+            if cancelled:
+                message_parts.append("\n<b>Cancelled Bookings:</b>")
+                for booking in cancelled:
+                    attrs = booking["attributes"]
+                    from_time = parser.parse(attrs["from"]).astimezone()
+                    to_time = parser.parse(attrs["to"]).astimezone()
+                    date = from_time.strftime("%Y-%m-%d")
+                    time = f"{from_time.strftime('%H:%M')} - {to_time.strftime('%H:%M')}"
+                    name = attrs["name"] or "N/A"
+                    title = attrs["title"] or "N/A"
+                    message_parts.append(f"❌ {date} {time}\n   {name}: {title}")
+
+            if new:
+                message_parts.append("\n<b>New Bookings:</b>")
+                for booking in new:
+                    attrs = booking["attributes"]
+                    from_time = parser.parse(attrs["from"]).astimezone()
+                    to_time = parser.parse(attrs["to"]).astimezone()
+                    date = from_time.strftime("%Y-%m-%d")
+                    time = f"{from_time.strftime('%H:%M')} - {to_time.strftime('%H:%M')}"
+                    name = attrs["name"] or "N/A"
+                    title = attrs["title"] or "N/A"
+                    message_parts.append(f"✓ {date} {time}\n   {name}: {title}")
+
+            # Send telegram notification
+            message = "\n".join(message_parts)
+            asyncio.run(send_telegram_message(message))
+
     except requests.exceptions.HTTPError as e:
-        console.print(f"Error: Failed to fetch bookings. {str(e)}", style="red")
+        error_message = f"Error: Failed to fetch bookings. {str(e)}"
+        console.print(error_message, style="red")
+        asyncio.run(send_telegram_message(error_message))
     except Exception as e:
-        console.print(f"Error: {str(e)}", style="red")
+        error_message = f"Error: {str(e)}"
+        console.print(error_message, style="red")
+        asyncio.run(send_telegram_message(error_message))
 
 
 @app.command()

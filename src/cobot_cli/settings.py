@@ -31,6 +31,9 @@ settings = Dynaconf(
             default="logs/cobot.log",
             is_type_of=str,
         ),
+        # Telegram configuration
+        Validator("telegram_bot_token", is_type_of=str),
+        Validator("telegram_chat_id", is_type_of=str),
     ],
 )
 

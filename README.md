@@ -19,6 +19,10 @@ api_base = "https://api.cobot.me"  # Optional: API base URL
 access_token = "your-cobot-access-token"  # Your Cobot API access token
 data_dir = "~/.local/share/cobot"  # Optional: Directory for storing booking history
 log_file = "logs/cobot.log"  # Optional: Log file path (relative to data_dir)
+
+# Telegram notifications (optional)
+telegram_bot_token = "your-telegram-bot-token"  # Your Telegram bot token
+telegram_chat_id = "your-telegram-chat-id"  # Your Telegram chat ID
 ```
 
 You can also use environment variables with the `COBOT_` prefix:
@@ -73,7 +77,20 @@ The monitor command will:
 - Save booking data to a JSONL file in the configured data directory
 - Compare with previous state to detect cancellations and new bookings
 - Show changes in a color-coded table (red for cancellations, green for new bookings)
+- Send Telegram notifications for booking changes (if configured)
 - Keep a complete history of all booking states for future reference
+
+### Telegram Notifications
+
+When Telegram is configured (using `telegram_bot_token` and `telegram_chat_id` in settings), the monitor command will automatically send notifications for:
+- New bookings (✓)
+- Cancelled bookings (❌)
+- Error conditions (e.g., API failures)
+
+Notifications are formatted with HTML and include:
+- Date and time of the booking
+- Name of the person booking
+- Title/purpose of the booking
 
 Options:
 - `--days` / `-d`: Number of days to fetch bookings for (default: 7)
