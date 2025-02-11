@@ -11,6 +11,7 @@ settings = Dynaconf(
     load_dotenv=True,
     validators=[
         Validator("space_id", must_exist=True, is_type_of=str),
+        Validator("space_subdomain", must_exist=True, is_type_of=str),
         Validator(
             "api_base", must_exist=True, is_type_of=str, default="https://api.cobot.me"
         ),

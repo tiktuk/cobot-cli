@@ -176,6 +176,73 @@ def get_bookings(
         console.print(f"Error: {str(e)}", style="red")
 
 
+def fetch_my_bookings(token: Optional[str] = None) -> list:
+    """Fetch upcoming bookings for the authenticated member."""
+    headers = {
+        "Authorization": f"Bearer {token or settings.access_token}",
+        "Accept": "application/json",
+    }
+
+    url = f"https://{settings.space_subdomain}.cobot.me/api/membership/bookings/upcoming"
+
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()
+
+    return response.json()
+
+
+def create_my_bookings_table(bookings: list) -> Table:
+    """Create a rich table for member's upcoming bookings."""
+    table = Table(show_header=True, header_style="bold magenta")
+    table.add_column("Date")
+    table.add_column("Time")
+    table.add_column("Resource")
+    table.add_column("Title")
+    table.add_column("Comments")
+
+    for booking in bookings:
+        from_time = parser.parse(booking["from"]).astimezone()  # Convert to local timezone
+        to_time = parser.parse(booking["to"]).astimezone()  # Convert to local timezone
+
+        # Format date and time
+        date = format_date(from_time)
+        time = format_time_range(from_time, to_time)
+
+        resource_name = booking["resource"]["name"]
+        title = booking.get("title", "N/A")
+        comments = booking.get("comments", "")
+
+        table.add_row(date, time, resource_name, title, comments)
+
+    return table
+
+
+@app.command()
+def my_bookings(
+    token: Optional[str] = typer.Option(
+        None, help="Cobot API access token (overrides settings)"
+    ),
+):
+    """List your upcoming bookings."""
+    try:
+        with console.status("Fetching your bookings..."):
+            bookings = fetch_my_bookings(token)
+
+        if not bookings:
+            console.print(
+                "No upcoming bookings found.", style="yellow"
+            )
+            return
+
+        table = create_my_bookings_table(bookings)
+        console.print(table)
+
+    except requests.exceptions.HTTPError as e:
+        console.print(f"Error: Failed to fetch bookings. {str(e)}", style="red")
+    except Exception as e:
+        console.print(f"Error: {str(e)}", style="red")
+
+
 def create_weekly_table(bookings: list, from_date: datetime, days: int) -> Table:
     """Create a rich table with days as columns and hourly time slots as rows."""
     table = Table(show_header=True, header_style="bold magenta")

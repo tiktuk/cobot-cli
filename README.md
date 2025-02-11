@@ -49,6 +49,11 @@ Get bookings for a specific resource:
 cobot get-bookings --resource RESOURCE_ID
 ```
 
+List your own upcoming bookings:
+```bash
+cobot my-bookings
+```
+
 Show weekly schedule for a resource:
 ```bash
 cobot show-weekly-schedule RESOURCE_ID
