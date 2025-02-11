@@ -24,6 +24,7 @@ log_file = "logs/cobot.log"  # Optional: Log file path (relative to data_dir)
 # Telegram notifications (optional)
 telegram_bot_token = "your-telegram-bot-token"  # Your Telegram bot token
 telegram_chat_id = "your-telegram-chat-id"  # Your Telegram chat ID
+booking_page_url = "https://members.example.com/bookings"  # Optional: URL to your booking page, shown in cancellation notifications
 ```
 
 You can also use environment variables with the `COBOT_` prefix:

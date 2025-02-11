@@ -35,6 +35,8 @@ settings = Dynaconf(
         # Telegram configuration
         Validator("telegram_bot_token", is_type_of=str),
         Validator("telegram_chat_id", is_type_of=str),
+        # Booking page URL configuration
+        Validator("booking_page_url", is_type_of=str),
     ],
 )
 

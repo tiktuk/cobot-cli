@@ -452,6 +452,9 @@ def create_booking_changes_table(cancelled: List[Dict], new: List[Dict]) -> Tabl
         title = attrs["title"] or "N/A"
 
         table.add_row("❌ Cancelled", date, time, name, title, style="red")
+        booking_link = getattr(settings, 'booking_page_url', None)
+        if booking_link:
+            console.print(f"Booking page: {booking_link}", style="blue")
 
     # Add new bookings in green
     for booking in new:
@@ -569,7 +572,13 @@ def monitor_bookings(
                     date = format_date(from_time)
                     time = format_time_range(from_time, to_time)
                     booking_info = format_booking_info(attrs["name"], attrs["title"])
-                    message_parts.append(f"❌ {date} {time}\n   {booking_info}")
+                    booking_link = getattr(settings, "booking_page_url", None)
+                    message = f"❌ {date} {time}\n   {booking_info}"
+                    if booking_link:
+                        message += (
+                            f"\n   <a href='{booking_link}'>View Booking Page</a>"
+                        )
+                    message_parts.append(message)
 
             if new:
                 message_parts.append("\n<b>New Bookings:</b>")

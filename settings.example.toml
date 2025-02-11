@@ -8,3 +8,4 @@ monitor_days_ahead = 30  # Number of days to look ahead when monitoring bookings
 log_file = "logs/cobot.log"  # Log file path (relative to data_dir, will be created in ~/.local/share/cobot/logs/cobot.log)
 telegram_bot_token = ""  # Your Telegram bot token from BotFather
 telegram_chat_id = ""  # Your Telegram chat ID where messages will be sent
+booking_page_url = ""  # Full URL for the booking page (e.g., "https://co-up.cobot.me/bookings")
