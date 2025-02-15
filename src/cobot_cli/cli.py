@@ -561,10 +561,10 @@ def monitor_bookings(
             console.print(table)
 
             # Create telegram message for changes
-            message_parts = ["<b>Booking Changes Detected:</b>\n"]
+            message_parts = []
 
             if cancelled:
-                message_parts.append("\n<b>Cancelled Bookings:</b>")
+                message_parts.append("<b>Cancelled Bookings:</b>")
                 for booking in cancelled:
                     attrs = booking["attributes"]
                     from_time = parser.parse(attrs["from"]).astimezone()
